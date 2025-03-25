@@ -90,12 +90,10 @@ def minimax(state, depth, maximizing, max_depth=10):
 
 
 def alphabeta(state, depth, alpha, beta, maximizing, max_depth=10):
-    # Alpha-beta pruning algorithm to optimize minimax
     if state.terminal() or depth >= max_depth:
-        return (state.h, None)  # Return heuristic value and no move at terminal state
+        return (state.h, None)
 
     moves = []
-    # Prioritize division by 3 by considering the right child first
     if state.right:
         moves.append((state.right, 3))
     if state.left:
@@ -104,33 +102,30 @@ def alphabeta(state, depth, alpha, beta, maximizing, max_depth=10):
     if maximizing:
         value = -math.inf
         best_move = None
-
         for child, move in moves:
             child_val, _ = alphabeta(child, depth + 1, alpha, beta, False, max_depth)
-
-            # Update best move if child's value is higher, or equal with priority for move 3
+            # Update best move and value
             if child_val > value or (child_val == value and move == 3):
                 value = child_val
                 best_move = move
-
+            # Prune if value exceeds beta
+            if value >= beta:
+                break
+            # Update alpha to the best value found
             alpha = max(alpha, value)
-            if beta <= alpha:
-                break  # Beta cutoff
-
-    else:  # Minimizing player
+        return (value, best_move)
+    else:
         value = math.inf
         best_move = None
-
         for child, move in moves:
             child_val, _ = alphabeta(child, depth + 1, alpha, beta, True, max_depth)
-
-            # Update best move if child's value is lower, or equal with priority for move 2
+            # Update best move and value
             if child_val < value or (child_val == value and move == 2):
                 value = child_val
                 best_move = move
-
+            # Prune if value is below alpha
+            if value <= alpha:
+                break
+            # Update beta to the best value found
             beta = min(beta, value)
-            if beta <= alpha:
-                break  # Alpha cutoff
-
-    return (value, best_move)
+        return (value, best_move)
