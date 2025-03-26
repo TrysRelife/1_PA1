@@ -1,0 +1,186 @@
+{
+    "minimax": [
+        {
+            "algorithm": "minimax",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 11484,
+            "total_moves": 4,
+            "total_ai_time": 5.570000212173909e-05,
+            "total_nodes_explored": 11
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 13062,
+            "total_moves": 2,
+            "total_ai_time": 8.000002708286047e-06,
+            "total_nodes_explored": 2
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 16914,
+            "total_moves": 2,
+            "total_ai_time": 8.499999239575118e-06,
+            "total_nodes_explored": 2
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 14736,
+            "total_moves": 5,
+            "total_ai_time": 2.2100000933278352e-05,
+            "total_nodes_explored": 17
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 11004,
+            "total_moves": 3,
+            "total_ai_time": 9.2999980552122e-06,
+            "total_nodes_explored": 3
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 15810,
+            "total_moves": 2,
+            "total_ai_time": 6.000002031214535e-06,
+            "total_nodes_explored": 2
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "Draw",
+            "starting_player": "player",
+            "initial_number": 14286,
+            "total_moves": 2,
+            "total_ai_time": 8.299997716676444e-06,
+            "total_nodes_explored": 2
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "Draw",
+            "starting_player": "player",
+            "initial_number": 10332,
+            "total_moves": 4,
+            "total_ai_time": 1.6400008462369442e-05,
+            "total_nodes_explored": 11
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "Draw",
+            "starting_player": "player",
+            "initial_number": 15282,
+            "total_moves": 4,
+            "total_ai_time": 2.179999864893034e-05,
+            "total_nodes_explored": 11
+        },
+        {
+            "algorithm": "minimax",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 12252,
+            "total_moves": 3,
+            "total_ai_time": 7.800001185387373e-06,
+            "total_nodes_explored": 5
+        }
+    ],
+    "alphabeta": [
+        {
+            "algorithm": "alphabeta",
+            "winner": "Draw",
+            "starting_player": "player",
+            "initial_number": 24030,
+            "total_moves": 4,
+            "total_ai_time": 2.8600006771739572e-05,
+            "total_nodes_explored": 6
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 17058,
+            "total_moves": 2,
+            "total_ai_time": 9.399998816661537e-06,
+            "total_nodes_explored": 2
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 15480,
+            "total_moves": 5,
+            "total_ai_time": 3.6600002204068005e-05,
+            "total_nodes_explored": 17
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 17706,
+            "total_moves": 2,
+            "total_ai_time": 9.10000380827114e-06,
+            "total_nodes_explored": 2
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 18162,
+            "total_moves": 3,
+            "total_ai_time": 1.4999997802078724e-05,
+            "total_nodes_explored": 5
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 15684,
+            "total_moves": 3,
+            "total_ai_time": 1.1800002539530396e-05,
+            "total_nodes_explored": 3
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 16218,
+            "total_moves": 3,
+            "total_ai_time": 8.600000001024455e-06,
+            "total_nodes_explored": 5
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 12492,
+            "total_moves": 4,
+            "total_ai_time": 3.170000854879618e-05,
+            "total_nodes_explored": 11
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "Player",
+            "starting_player": "player",
+            "initial_number": 10116,
+            "total_moves": 4,
+            "total_ai_time": 2.989999484270811e-05,
+            "total_nodes_explored": 11
+        },
+        {
+            "algorithm": "alphabeta",
+            "winner": "AI",
+            "starting_player": "player",
+            "initial_number": 14484,
+            "total_moves": 3,
+            "total_ai_time": 5.199995939619839e-06,
+            "total_nodes_explored": 3
+        }
+    ]
+}
