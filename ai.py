@@ -1,182 +1,196 @@
 import math
 
 class GameState:
-    """
-    Represents a specific state of the Number Division Game.
-    Includes number, scores, bank, turn, and potential next states.
-    """
+    """Represents the state of the Number Division Game at a specific point."""
 
     def __init__(self, n, cp, pp, b, turn, original_turn):
         """
-        Initializes a game state.
-        cp: AI/Player 2 score, pp: Human/Player 1 score.
-        original_turn: Player who started the game (1 or 2), crucial for heuristic.
+        Initialize a game state.
+        n: Current number.
+        cp: AI/Player 2 score.
+        pp: Human/Player 1 score.
+        b: Bank value.
+        turn: Player whose turn it is (1 or 2).
+        original_turn: Player who started the game (1 or 2).
         """
         self.n = n
         self.cp = cp
         self.pp = pp
         self.b = b
-        self.turn = turn # Player whose turn it is in *this* state
-        self.original_turn = original_turn # Who started the game
+        self.turn = turn
+        self.original_turn = original_turn # Used for consistent heuristic evaluation
 
         # Generate potential child states (next possible moves)
-        self.left = self.create_child(2) if n > 1 and n % 2 == 0 else None
-        self.right = self.create_child(3) if n > 1 and n % 3 == 0 else None
+        # Division requires n > 3.
+        self.left = self.create_child(2) if n > 3 and n % 2 == 0 else None
+        self.right = self.create_child(3) if n > 3 and n % 3 == 0 else None
 
-        # A state is terminal if no further moves are possible
-        self._is_terminal = (n <= 1) or (self.left is None and self.right is None)
+        # A state is terminal if no further moves are possible (n <= 3)
+        self._is_terminal = self.left is None and self.right is None
 
-        # Calculate heuristic value upon initialization
-        self.h = self.heuristic()
+        # Calculate the heuristic value ONLY if it's terminal.
+        # Value for non-terminal states isn't needed for the base case here.
+        self.h = self.heuristic() if self._is_terminal else 0 # Assign 0 or other placeholder if not terminal
 
     def create_child(self, divisor):
-        """Generates a successor game state resulting from dividing by the divisor."""
+        """Generates a successor game state after dividing by the divisor."""
         new_n = self.n // divisor
-        pt = 1 if new_n % 2 == 0 else -1 # Points for this move (+1 if new_n even, -1 if odd)
+        # Points awarded: +1 if the new number is even, -1 if odd
+        pt = 1 if new_n % 2 == 0 else -1
 
-        # Assign points to the player *making* the current move (self.turn)
+        # Assign points to the player whose turn it is in the *current* state
         new_cp_add = pt if self.turn == 2 else 0
         new_pp_add = pt if self.turn == 1 else 0
 
+        # Update scores (cannot go below 0)
         new_cp = max(0, self.cp + new_cp_add)
         new_pp = max(0, self.pp + new_pp_add)
-        new_b = self.b + (1 if new_n % 5 == 0 else 0) # Update bank if new_n divisible by 5
+        # Update bank if the new number is divisible by 5
+        new_b = self.b + (1 if new_n % 5 == 0 else 0) # Bank still updated, though ignored by heuristic
 
-        # Determine whose turn it is in the *next* state
+        # Determine whose turn it is in the next state
         new_turn = None
-        is_new_state_terminal = (new_n <= 1) or (new_n % 2 != 0 and new_n % 3 != 0)
+        # Check if the *new* state will be terminal (n <= 3)
+        is_new_state_terminal = (new_n <= 3)
         if not is_new_state_terminal:
              new_turn = 2 if self.turn == 1 else 1 # Switch turns
 
         return GameState(new_n, new_cp, new_pp, new_b, new_turn, self.original_turn)
 
     def terminal(self):
-        """Checks if the current game state represents the end of the game."""
+        """Returns true if this state is a terminal state (no more moves)."""
         return self._is_terminal
 
     def heuristic(self):
         """
-        Estimates the value of the state for the player who started the game (original_turn).
+        Evaluates the value of a TERMINAL state for the player who started the game.
         Higher value is better for the starting player.
-        ALIGNED WITH WINNER DETERMINATION (scores only in terminal state).
         """
-        # --- Terminal State Evaluation ---
-        if self.terminal():
-            # Final value based *only* on score difference, aligned with determine_winner()
-            score_diff = (self.pp - self.cp) if self.original_turn == 1 else (self.cp - self.pp)
-            # Return a large value if winning, small if losing, to make terminal states dominant
-            if score_diff > 0: return 1000.0 + score_diff # Win for original starter
-            elif score_diff < 0: return -1000.0 + score_diff # Loss for original starter
-            else: return 0.0 # Draw
-
-        # --- Non-Terminal State Evaluation Weights ---
-        W_SCORE_DIFF = 1.0    # Base weight for current score difference
-        W_BANK = 0.05         # *** Bank is very secondary - reduced weight ***
-        W_IMMEDIATE_POINTS = 0.8 # Weight for points from *our* next move
-        W_MOVE_OPTIONS = 0.05 # Small bonus for flexibility
-
-        # --- Calculate Base Value ---
+        # Calculate score difference from the perspective of the original starting player
         score_diff = (self.pp - self.cp) if self.original_turn == 1 else (self.cp - self.pp)
-        # Include bank with very low weight, might even set W_BANK to 0
-        heuristic_val = (W_SCORE_DIFF * score_diff) + (W_BANK * self.b)
 
-        # --- Calculate Immediate Point Potential ---
-        possible_points = []
-        if self.left:
-            possible_points.append(1 if (self.n // 2) % 2 == 0 else -1)
-        if self.right:
-            possible_points.append(1 if (self.n // 3) % 2 == 0 else -1)
-
-        if possible_points:
-            best_potential_pts = max(possible_points) # Best outcome for current player
-
-            # Adjust heuristic based on whose turn it is
-            if self.turn == self.original_turn: # Good if starter has good move
-                heuristic_val += W_IMMEDIATE_POINTS * best_potential_pts
-            else: # Bad if opponent has good move (subtract their best potential)
-                heuristic_val -= W_IMMEDIATE_POINTS * best_potential_pts
-
-        # --- Add small bonus for Move Options ---
-        move_count = len(possible_points)
-        if move_count > 0:
-            heuristic_val += W_MOVE_OPTIONS * (move_count / 2.0)
-
-        return heuristic_val
+        # Return large values indicating win/loss/draw for the starting player
+        # (Adding score_diff helps slightly in tie-breaking between win/loss states if needed)
+        if score_diff > 0: return 1000.0 + score_diff # Win for original starter
+        elif score_diff < 0: return -1000.0 + score_diff # Loss for original starter
+        else: return 0.0 # Draw
 
 
-def minimax(state, depth, maximizing, max_depth=10):
+# --- Minimax Algorithm (Unlimited Depth) ---
+def minimax(state, maximizing):
+    """
+    Performs the minimax search algorithm WITHOUT depth limit.
+    Returns (best_value, best_move_divisor, nodes_explored).
+    WARNING: Can be extremely slow or run indefinitely for large N.
+    """
     nodes_explored = 1
-    if state.terminal() or depth >= max_depth:
+    # Base case: ONLY stop at actual terminal game states
+    if state.terminal():
+        # Use the heuristic value calculated specifically for terminal states
         return (state.h, None, nodes_explored)
 
+    # Get available moves
     moves = []
     if state.left: moves.append((state.left, 2))
     if state.right: moves.append((state.right, 3))
-    if not moves: return (state.h, None, nodes_explored)
-    best_move = moves[0][1]
+
+    best_move = moves[0][1] # Default to the first available move
+
     if maximizing:
         max_val = -math.inf
         for child, move in moves:
-            # Pass max_depth down correctly
-            child_val, _, child_nodes = minimax(child, depth + 1, False, max_depth)
+            # Recursive call - NO depth parameter passed
+            child_val, _, child_nodes = minimax(child, False) # Switch to minimizing
             nodes_explored += child_nodes
+            # Update max value and best move
             if child_val > max_val:
                 max_val = child_val
                 best_move = move
+            # Tie-breaking: Prefer dividing by 3 if values are equal
             elif child_val == max_val and move == 3:
                  best_move = move
         return (max_val, best_move, nodes_explored)
-    else:
+    else: # Minimizing
         min_val = math.inf
         for child, move in moves:
-            # Pass max_depth down correctly
-            child_val, _, child_nodes = minimax(child, depth + 1, True, max_depth)
+            # Recursive call - NO depth parameter passed
+            child_val, _, child_nodes = minimax(child, True) # Switch to maximizing
             nodes_explored += child_nodes
+            # Update min value and best move
             if child_val < min_val:
                 min_val = child_val
                 best_move = move
+            # Tie-breaking: Prefer dividing by 2 if values are equal
             elif child_val == min_val and move == 2:
                  best_move = move
         return (min_val, best_move, nodes_explored)
 
 
-def alphabeta(state, depth, alpha, beta, maximizing, max_depth=10):
+# --- Alpha-Beta Algorithm (Unlimited Depth) ---
+def alphabeta(state, alpha, beta, maximizing):
+    """
+    Performs minimax search with alpha-beta pruning WITHOUT depth limit.
+    Returns (best_value, best_move_divisor, nodes_explored).
+    WARNING: Can be extremely slow or run indefinitely for large N.
+    """
     nodes_explored = 1
-    if state.terminal() or depth >= max_depth:
+    # Base case: ONLY stop at actual terminal game states
+    if state.terminal():
+        # Use the heuristic value calculated specifically for terminal states
         return (state.h, None, nodes_explored)
 
+    # Get available moves
     moves = []
     if state.left: moves.append((state.left, 2))
     if state.right: moves.append((state.right, 3))
-    if not moves: return (state.h, None, nodes_explored)
-    best_move = moves[0][1]
+
+    best_move = moves[0][1] # Default best move
+
     if maximizing:
         value = -math.inf
+        # Consider move order for potentially better pruning (e.g., evaluate preferred tie-break move first?)
+        # Simple iteration here:
         for child, move in moves:
-             # Pass max_depth down correctly
-            child_val, _, child_nodes = alphabeta(child, depth + 1, alpha, beta, False, max_depth)
+            # Recursive call - NO depth parameter passed
+            child_val, _, child_nodes = alphabeta(child, alpha, beta, False) # Switch to minimizing
             nodes_explored += child_nodes
+
+            # Update the best value found so far for this maximizing node
             if child_val > value:
                 value = child_val
-                best_move = move
+                best_move = move # Update best move only when value improves
+            # Tie-breaking: Prefer 3
             elif child_val == value and move == 3:
                 best_move = move
-            alpha = max(alpha, value)
-            if alpha >= beta:
-                break
+
+            # --- Pruning Check ---
+            if value >= beta: # Check if current best value is already too high for the MIN parent
+                break # Beta cut-off
+            # --- Update Alpha ---
+            alpha = max(alpha, value) # Update the best option found for MAX along this path
+
         return (value, best_move, nodes_explored)
+
     else: # Minimizing
         value = math.inf
+        # Consider move order for potentially better pruning
         for child, move in moves:
-             # Pass max_depth down correctly
-            child_val, _, child_nodes = alphabeta(child, depth + 1, alpha, beta, True, max_depth)
+            # Recursive call - NO depth parameter passed
+            child_val, _, child_nodes = alphabeta(child, alpha, beta, True) # Switch to maximizing
             nodes_explored += child_nodes
+
+            # Update the best value found so far for this minimizing node
             if child_val < value:
                 value = child_val
-                best_move = move
+                best_move = move # Update best move only when value improves
+            # Tie-breaking: Prefer 2
             elif child_val == value and move == 2:
                  best_move = move
-            beta = min(beta, value)
-            if alpha >= beta:
-                break
+
+            # --- Pruning Check ---
+            if value <= alpha: # Check if current best value is already too low for the MAX parent
+                break # Alpha cut-off
+            # --- Update Beta ---
+            beta = min(beta, value) # Update the best option found for MIN along this path
+
         return (value, best_move, nodes_explored)
